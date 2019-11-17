@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use DateTime;
+use Exception;
 use App\Entity\{Order, User};
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
@@ -22,28 +23,26 @@ class OrderRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param DateTime $period_start
-     * @param DateTime $period_end
-     * @param int $limit
+     * @param int $interval
      * @param array $weeks - ODBC standard
+     * @param int $limit
      * @return mixed
+     * @throws Exception
      */
-    public function findOrderByPeriod(DateTime $period_start, DateTime $period_end, int $limit = 500, array $weeks = [1,2,3,4,5,6,7]){
+    public function findOrderByPeriod(int $interval,array $weeks = [1,2,3,4,5,6,7], int $limit = 500){
         return $this->createQueryBuilder('o')
             ->select('o.id orderid,u.email,o.date')
             ->join(User::class,'u',Join::WITH,'o.user = u')
-            ->where('o.date > :start')
-            ->andWhere('o.date < :end')
+            ->where('o.date BETWEEN :start AND NOW()')
             ->andWhere('DAYOFWEEK(o.date) IN (:weeks)')
             ->setParameters([
-                'start' => $period_start->format('Y-m-d'),
-                'end' => $period_end->format('Y-m-d'),
+                'start' => new DateTime('-'.$interval.' days'),
                 'weeks' => $weeks
             ])
             ->orderBy('o.date','DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult(AbstractQuery::HYDRATE_ARRAY);
+            ->getArrayResult();
     }
 
     // /**

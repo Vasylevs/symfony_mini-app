@@ -4,11 +4,13 @@ namespace App\Repository;
 
 use App\Entity\Order;
 use App\Entity\User;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query\Expr\Join;
+use Exception;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -61,34 +63,35 @@ class UserRepository extends ServiceEntityRepository
             ->join(Order::class,'o',Join::WITH,'u = o.user')
             ->where('o.status = :status')
             ->setParameter('status',Order::$success)
-            ->groupBy('u.id')
+            ->groupBy('o.user')
             ->orderBy('total','DESC')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult(AbstractQuery::HYDRATE_ARRAY);
+            ->getArrayResult();
     }
 
     /**
      * @param $last_year
      * @param int $limit
      * @return mixed
+     * @throws Exception
      */
     public function getUserNotSuccessOrder($last_year,int $limit = 500){
         return $this->createQueryBuilder('u')
             ->select('u')
             ->join(Order::class,'o',Join::WITH,'u = o.user')
-            ->where('o.status <> :status')
-            ->andWhere('o.date > :start')
-            ->andWhere('o.date < :end')
+            ->where('o.date BETWEEN :start AND :end')
+            ->andWhere('o.status <> :status')
             ->setParameters([
                 'status' => Order::$success,
-                'start' => "$last_year-01-01",
-                'end' => "$last_year-12-31"
+                'start' => new DateTime("$last_year-01-01"),
+                'end' => new DateTime("$last_year-12-31")
             ])
+            ->groupBy('o.user')
             ->orderBy('u.registration_date')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult(AbstractQuery::HYDRATE_ARRAY);
+            ->getArrayResult();
     }
 
     // /**

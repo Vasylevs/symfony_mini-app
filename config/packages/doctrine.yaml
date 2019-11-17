@@ -20,6 +20,7 @@ doctrine:
         dql:
             datetime_functions:
                 dayofweek: DoctrineExtensions\Query\Mysql\DayOfWeek
+                now: DoctrineExtensions\Query\Mysql\Now
         mappings:
             App:
                 is_bundle: false

@@ -31,11 +31,10 @@ class OrderStatisticsController extends AbstractController
 
         switch ($action){
             case 'top_order_work_day':
-                $date_end = new DateTime();
-                $date_start = new DateTime();
-                $date_start->modify('-3 months');
+                $period = (int)$request->get('period');
+                $wek_days = explode(',',$request->get('wek_days'));
 
-                return $this->json($orderRepository->findOrderByPeriod($date_start,$date_end,500,[2,3,4,5,6]));
+                return $this->json($orderRepository->findOrderByPeriod($period,$wek_days,500));
             default:
                 return $this->json('no action',400);
         }

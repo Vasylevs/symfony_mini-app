@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20191114141421 extends AbstractMigration
+final class Version20191117194315 extends AbstractMigration
 {
     public function getDescription() : string
     {
@@ -23,7 +23,9 @@ final class Version20191114141421 extends AbstractMigration
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
         $this->addSql('ALTER TABLE orders CHANGE user_id user_id INT DEFAULT NULL');
-        $this->addSql('CREATE INDEX date_status ON orders (date, status)');
+        $this->addSql('CREATE INDEX date ON orders (date)');
+        $this->addSql('CREATE INDEX status_user ON orders (status, user_id)');
+        $this->addSql('CREATE INDEX date_status_user ON orders (date, status, user_id)');
     }
 
     public function down(Schema $schema) : void
@@ -31,7 +33,9 @@ final class Version20191114141421 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('DROP INDEX date_status ON orders');
+        $this->addSql('DROP INDEX date ON orders');
+        $this->addSql('DROP INDEX status_user ON orders');
+        $this->addSql('DROP INDEX date_status_user ON orders');
         $this->addSql('ALTER TABLE orders CHANGE user_id user_id INT NOT NULL');
     }
 }
